@@ -235,6 +235,22 @@ void  init(float** matrix , int xr, int xc, int n){
     }
 }
 
+void  init(float** matrix ,int m, int n){
+    for (int i=0 ;i < m; i++){
+        for (int j = 0; j < n; ++j) {
+            matrix[i][j] = 0;
+        }
+    }
+}
+
+void  init(float** matrix , int xr, int xc, int m, int n){
+    for (int i=0 ;i < m; i++){
+        for (int j = 0; j < n; ++j) {
+            matrix[xr+i][xc+j] = 0.0;
+        }
+    }
+}
+
 void free(float** matrix , int m){
     for (int i = 0;i<m;i++){
         free(matrix[i]);
