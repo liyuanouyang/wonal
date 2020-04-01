@@ -59,7 +59,7 @@ void woco_chol(float** mata, float** matl, float** matlt, float** tempc, float**
         int p = n-m;
         woco_chol(mata,matl,matlt,tempc,temp,templ,ar,ac,m);
         init(temp,ar,ac,m);
-        woco_trsm(matl,mata,matlt,temp,ar,ac,ar,ac+m,p);
+        woco_trsm(matl,mata,matlt,temp,ar,ac,ar,ac+m,p,p);
         transport(matl,templ,p,m);
 //        float** tempc;
 //        square_matrix(&tempc,2*p);
