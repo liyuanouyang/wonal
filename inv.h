@@ -64,8 +64,12 @@ void inv(
     init(inv_matu,m);
     lufac(mata, matl, matu, matp, ar, ac, m, m ,m);
     inv_l(matl, inv_matl, temp, ar, ac, m);
+	init(temp, m);
     inv_u(matu, inv_matu, temp, ar, ac, m);
-    vex_wo(inv_matl, inv_matu, inv_mata, ar, ac, ar, ac, m, m, m);
+	init(temp, m);
+    vex_wo(inv_matu, inv_matl, temp, ar, ac, ar, ac, m, m, m);
+	vex_wo(temp, matp, inv_mata, ar , ac, ar, ac, m, m, m);
 }
 
 #endif //WONAL_INV_H
+
