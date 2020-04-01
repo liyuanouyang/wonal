@@ -145,8 +145,8 @@ void woco_LUfac(float** mata,float** matl,float** matu,float**matp,float** trsm_
         lufac(mata,matl,matu,matp,ar,ac,n,inputm,inputn);
     }
     woco_LUfac(mata,matl,matu,matp,trsm_temp,ar,ac,p,inputm,inputn);
-    woco_trsm(matl,mata,matu,trsm_temp,ar,ac,ar,ac+p,q);
-    woco_trsm(matu,mata,matl,trsm_temp,ar,ac,ar+p,ac,q);
+    woco_trsm(matl,mata,matu,trsm_temp,ar,ac,ar,ac+p,q,q);
+    woco_trsm(matu,mata,matl,trsm_temp,ar,ac,ar+p,ac,q,q);
     if (flag ==1){
         float **temp = new float*[inputm];
         for (int i = 0; i < inputm; ++i) {
