@@ -69,6 +69,11 @@ void inv(
 	init(temp, m);
     vex_wo(inv_matu, inv_matl, temp, ar, ac, ar, ac, m, m, m);
 	vex_wo(temp, matp, inv_mata, ar , ac, ar, ac, m, m, m);
+	free(matl,m);
+    free(matu,m);
+    free(matp,m);
+    free(inv_matu,m);
+    free(inv_matl,m);
 }
 
 #endif //WONAL_INV_H
