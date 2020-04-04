@@ -19,8 +19,8 @@ void matrix_minus(float **mata,float **matb,int ar,int ac,int br, int bc,int m,i
 
 
 void direct_trsm(float **mata, float **matb, float **matx,
-                 int ar, int ac, int xr, int xc,
-                 int m, int n){
+        int ar, int ac, int xr, int xc,
+        int m, int n){
     //A is lower triangular matrix
     //A is m*m , B is m*n X is m*n ,wo find x
 #pragma omp parallel for num_threads(core_num) default(none) shared(mata,matb,matx,m,n,ar,ac,xr,xc)
@@ -40,7 +40,7 @@ void direct_trsm(float **mata, float **matb, float **matx,
 //need test
 //A is m*m , B is m*n X is m*n ,wo find x
 void woco_trsm(float **mata, float **matb, float **matx, float** temp,
-               int ar, int ac,int xr, int xc, int m, int n){
+        int ar, int ac,int xr, int xc, int m, int n){
     if (3*m*n < CACHE_SIZE){
         direct_trsm(mata,matb,matx,ar,ac,xr,xc,m,n);
     } else{
@@ -49,15 +49,17 @@ void woco_trsm(float **mata, float **matb, float **matx, float** temp,
         int c = n / 2;
         woco_trsm(mata,matb,matx,temp,ar,ac,xr,xc,r,c);
         woco_trsm(mata,matb,matx,temp,ar,ac,xr,xc + c,r,c);
-        if (flag == 1){vex_wo(mata,matx,temp,ar+r,ac,xr,xc,r,r,c);}
-        else if(flag == 2){omp_vec_mat_mult(mata,matx,temp,ar+r,ac,xr,xc,r,r,c);}
-//        else if(flag == 3){matrix_multi(mata,matx,temp,ar+p,ac,xr,xc,p,p,p);}
-//       matrix_minus(matb,temp,ar+q,xc,ar+q,xc,p);
+        vex_wo(mata,matx,temp,ar+r,ac,xr,xc,r,r,c);
+        //        if (flag == 1){vex_wo(mata,matx,temp,ar+r,ac,xr,xc,r,r,c);}
+        //        else if(flag == 2){omp_vec_mat_mult(mata,matx,temp,ar+r,ac,xr,xc,r,r,c);}
+        //        else if(flag == 3){matrix_multi(mata,matx,temp,ar+p,ac,xr,xc,p,p,p);}
+        //       matrix_minus(matb,temp,ar+q,xc,ar+q,xc,p);
         matrix_minus(matb,temp,xr+r,xc,ar+r,xc,r,c);
         woco_trsm(mata,matb,matx,temp,ar+r,ac+r,xr+r,xc,r,c);
-        if (flag ==1){vex_wo(mata,matx,temp,ar+r,ac,xr,xc+c,r,r,c);}
-        else if (flag == 2){omp_vec_mat_mult(mata,matx,temp,ar+r,ac,xr,xc+c,r,r,c);}
-//        else if(flag == 3){matrix_multi(mata,matx,temp,ar+p,ac,xr,xc,p,p,p);}
+        vex_wo(mata,matx,temp,ar+r,ac,xr,xc+c,r,r,c);
+        //        if (flag ==1){vex_wo(mata,matx,temp,ar+r,ac,xr,xc+c,r,r,c);}
+        //        else if (flag == 2){omp_vec_mat_mult(mata,matx,temp,ar+r,ac,xr,xc+c,r,r,c);}
+        //        else if(flag == 3){matrix_multi(mata,matx,temp,ar+p,ac,xr,xc,p,p,p);}
         matrix_minus(matb,temp,xr+r,xc+c,ar+r,xc+c,r,c);
         woco_trsm(mata,matb,matx,temp,ar+r,ac+r,xr+r,xc+c,r,c);
     }
@@ -65,15 +67,15 @@ void woco_trsm(float **mata, float **matb, float **matx, float** temp,
 
 
 void direct_trsm_u(float **mata, float **matb, float **matx,
-                 int ar, int ac, int xr, int xc,
-                 int m, int n){
+        int ar, int ac, int xr, int xc,
+        int m, int n){
     //A is upper triangular matrix
     //A is m*m , B is m*n X is m*n ,wo find x
     //square n
 #pragma omp parallel for num_threads(core_num) default(none) shared(mata,matb,matx,m,n,ar,ac,xr,xc)
-    for (int j = 0; j < n; ++j) {    
+    for (int j = 0; j < n; ++j) {
         for (int i = m - 1; i >= 0; --i) {
-        int temp = 0;
+            int temp = 0;
             for (int k = i; k < m ; ++k) {
                 temp += mata[ar+i][ac+k]*matx[xr+k][xc+j];
             }
@@ -85,7 +87,7 @@ void direct_trsm_u(float **mata, float **matb, float **matx,
 
 //need test
 void woco_trsm_u(float **mata, float **matb, float **matx, float** temp,
-               int ar, int ac,int xr, int xc, int m, int n){
+        int ar, int ac,int xr, int xc, int m, int n){
     if (3*m*n < CACHE_SIZE){
         direct_trsm_u(mata, matb, matx, ar, ac, xr, xc, m, n);
     } else{
@@ -94,26 +96,40 @@ void woco_trsm_u(float **mata, float **matb, float **matx, float** temp,
         int c = n/2;
         woco_trsm_u(mata, matb, matx, temp, ar + r, ac + r, xr + r, xc + c , r , c);
         woco_trsm_u(mata, matb, matx, temp, ar + r, ac + r, xr + r, xc, r, c);
-        if (flag == 1){vex_wo(mata,matx,temp,ar,ac+r,xr+r,xc+c,r,r,c);}
-        else if(flag == 2){omp_vec_mat_mult(mata,matx,temp,ar,ac+r,xr+r,xc+c,r,r,c);}
-//        else if(flag == 3){matrix_multi(mata,matx,temp,ar,ac+r,xr+r,xc+c,r,r,c);}
+        vex_wo(mata,matx,temp,ar,ac+r,xr+r,xc+c,r,r,c);
+        //        if (flag == 1){vex_wo(mata,matx,temp,ar,ac+r,xr+r,xc+c,r,r,c);}
+        //        else if(flag == 2){omp_vec_mat_mult(mata,matx,temp,ar,ac+r,xr+r,xc+c,r,r,c);}
+        //        else if(flag == 3){matrix_multi(mata,matx,temp,ar,ac+r,xr+r,xc+c,r,r,c);}
         matrix_minus(matb,temp,xr,xc+c,ar,xc+c,r,c);
         woco_trsm_u(mata,matb,matx,temp,ar,ac,xr,xc+c,r,c);
-        if (flag ==1){vex_wo(mata,matx,temp,ar,ac+r,xr+r,xc,r,r,c);}
-        else if (flag == 2){omp_vec_mat_mult(mata,matx,temp,ar,ac+r,xr+r,xc,r,r,c);}
-//        else if(flag == 3){matrix_multi(mata,matx,temp,ar,ac+r,xr+r,xc,r,r,c);}
+        vex_wo(mata,matx,temp,ar,ac+r,xr+r,xc,r,r,c);
+        //        if (flag ==1){vex_wo(mata,matx,temp,ar,ac+r,xr+r,xc,r,r,c);}
+        //        else if (flag == 2){omp_vec_mat_mult(mata,matx,temp,ar,ac+r,xr+r,xc,r,r,c);}
+        //        else if(flag == 3){matrix_multi(mata,matx,temp,ar,ac+r,xr+r,xc,r,r,c);}
         matrix_minus(matb,matx,xr,xc,ar,xc,r,c);
         woco_trsm_u(mata,matb,matx,temp,ar,ac,xr,xc,r,c);
     }
 }
 
+/*
+DTRSM  solves one of the matrix equations
 
-void trsm(char SIDE, char UPLO, char TRANSA, 
-          float **mata, float **matb, float **matx,
-          int ar, int ac, int xr, int xc, int m, int n ){
+    op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
 
-    int error = 0; 
+ where alpha is a scalar, X and B are m by n matrices, A is a unit, or
+ non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
 
+    op( A ) = A   or   op( A ) = A**T.
+
+ The matrix X is overwritten on B.
+*/
+void trsm(char SIDE, char UPLO, char TRANSA,
+        float **mata, float **matb, float alpha,
+        int ar, int ac, int xr, int xc, int m, int n ){
+	float **matx = new_matrix(m, n);
+    init(matx,m,n);
+    int error = 0;
+	mul(matb,m,n,alpha);
     if(SIDE == 'L' || SIDE == 'l'){
 
         float **temp = new_matrix(m, n);
@@ -197,8 +213,12 @@ void trsm(char SIDE, char UPLO, char TRANSA,
     if(error == 1) printf("argument TRANSA error!");
     if(error == 2) printf("argument UPLO error!");
     if(error == 3) printf("argument SIDE error!");
+	copy(matb,matx,m,n);
+	free(matx,m);
 
 }
 
 
 #endif //WONAL_TRSM_H
+
+

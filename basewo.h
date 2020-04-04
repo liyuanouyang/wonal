@@ -343,5 +343,29 @@ float** matrix_mul(float** mata,float** matb,int m,int k,int n,int err ,struct m
 //        write_optimal(mata,matb,matc,ar,ac,br,bc+p,m,k,p);
 //    }
 //}
+void copy(float ** mata, float **matb, int m, int n){
+	for(int i = 0; i< m; i++){
+		for(int j = 0; j< n; j++){
+			mata[i][j] = matb[i][j];
+		}
+	}
+}
 
+// A = alpha * A
+void mul(float ** mata, int m, int n, float alpha){
+	for(int i = 0; i< m; i++){
+		for(int j = 0; j< n; j++){
+			mata[i][j] = alpha * mata[i][j];
+		}
+	}
+}
+
+// A =alpha * A + beta * B
+void add(float **mata, float **matb, int m, int n, float alpha, float beta){
+	for(int i = 0; i< m; i++){
+		for(int j = 0; j< n; j++){
+			mata[i][j] = alpha * mata[i][j] + beta * matb[i][j];
+		}
+	}
+}	
 #endif //WONAL_BASEWO_H
