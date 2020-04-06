@@ -218,6 +218,15 @@ void transport(float** mata, float** matb, int m, int n){
         }
     }
 }
+
+void transport(float** mata,float** matb,int ar,int ac,int m, int n){
+    for(int i = 0; i < m; ++i){
+        for(int j = 0; j < n; ++j){
+            matb[j][i] = mata[ar+i][ac+j];
+        }
+    }
+}
+
 //归零
 void  init(float** matrix , int n){
     for (int i=0 ;i < n; i++){
@@ -343,29 +352,41 @@ float** matrix_mul(float** mata,float** matb,int m,int k,int n,int err ,struct m
 //        write_optimal(mata,matb,matc,ar,ac,br,bc+p,m,k,p);
 //    }
 //}
-void copy(float ** mata, float **matb, int m, int n){
+void copy(float ** mata, float **matb, int ar,int ac,int br,int bc,int m, int n){
 	for(int i = 0; i< m; i++){
 		for(int j = 0; j< n; j++){
-			mata[i][j] = matb[i][j];
+			mata[ar+i][ac+j] = matb[br+i][bc+j];
 		}
 	}
 }
 
 // A = alpha * A
-void mul(float ** mata, int m, int n, float alpha){
+void mul(float ** mata, int ar,int ac,int m, int n, float alpha){
 	for(int i = 0; i< m; i++){
 		for(int j = 0; j< n; j++){
-			mata[i][j] = alpha * mata[i][j];
+			mata[ar + i][ac + j] = alpha * mata[ar + i][ac + j];
 		}
 	}
 }
 
 // A =alpha * A + beta * B
-void add(float **mata, float **matb, int m, int n, float alpha, float beta){
+void add(float **mata, float **matb, int ar ,int ac,int m, int n, float alpha, float beta){
 	for(int i = 0; i< m; i++){
 		for(int j = 0; j< n; j++){
-			mata[i][j] = alpha * mata[i][j] + beta * matb[i][j];
+			mata[ar + i][ac + j] = alpha * mata[ar + i][ ac + j] + beta * matb[ar + i][ac + j];
 		}
 	}
+}	
+
+void display(float ** mata, int m,int n){
+    ofstream outfile;
+    outfile.open("afile.dat");
+    for(int i = 0; i < m; i++){
+        for(int j = 0; j < n; j++){
+            outfile << mata[i][j] << ' ';
+        }
+        outfile << endl;
+    }
+    outfile << endl;
 }	
 #endif //WONAL_BASEWO_H
