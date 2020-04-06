@@ -1,72 +1,62 @@
-//
-// Created by whe on 2020/04/04.
-//
+/*
+ * @Author       : whe
+ * @Date         : 2020-04-04 18:10:29
+ * @LastEditTime : 2020-04-06 19:05:58
+ * @Description  : 
+ */
+
 
 #ifndef WONAL_GEMM_H
 #define WONAL_GEMM_H
 
 #include "basewo.h"
-
+#include <iostream>
+using namespace std;
 /*
    GEMM  performs one of the matrix-matrix operations
 
-C := alpha*op( A )*op( B ) + beta*C,
+C := alpha* A * B  + beta*C,
 
-where  op( X ) is one of
 
-op( X ) = X   or   op( X ) = X**T,
 */
-
-void gemm(char TRANSA, char TRANSB,
-        float **mata, float **matb, float **matc,float alpha, float beta,
+void gemm(float **mata, float **matb, float **matc,float alpha,float beta,
         int ar, int ac, int br, int bc, int m, int k, int n){
 
-    float ** temp = new_matrix(m,n);
-    copy(temp,matc,m,n);
+    float ** temp = new_matrix(ar + m, bc + n);
+    init(temp,ar + m, bc + n);
 
     // A is m * k, B is k * n
-    if((TRANSA == 'N' || TRANSA == 'n') && (TRANSB == 'N' || TRANSB == 'n')){
-        vex_wo(mata,matb,matc,ar,ac,br,bc,m,k,n);
-    }
-    //A is k * m, B is k * n
-    else if((TRANSA == 'T' || TRANSA == 't' || TRANSA == 'C' || TRANSA == 'c') && (TRANSB == 'N' || TRANSB == 'n')){
-
-        float ** tran_a = new_matrix(m,k);
-        init(tran_a,m,k);
-        transport(mata,tran_a,k,m);
-        vex_wo(tran_a,matb,matc,ar,ac,br,bc,m,k,n);
-        free(tran_a, m);
-    }
-    // A is m * k, B is n * k
-    else if((TRANSB == 'T' || TRANSB == 't' || TRANSB == 'C' || TRANSB == 'c') && (TRANSA == 'N' || TRANSA == 'n')){
-
-        float ** tran_b = new_matrix(k,n);
-        init(tran_b,k,n);
-        transport(matb,tran_b,n,k);
-        vex_wo(mata,tran_b,matc,ar,ac,br,bc,m,n,k);
-        free(tran_b,k);
-
-    }
-    //A is k * m, B is n * k
-    else if((TRANSA == 'T' || TRANSA == 't' || TRANSA == 'C' || TRANSA == 'c') && (TRANSB == 'T' || TRANSB == 't' || TRANSB == 'C' || TRANSB == 'c')){
-        float ** tran_a = new_matrix(m,k);
-        float ** tran_b = new_matrix(k,n);
-        init(tran_a,m,k);
-        init(tran_b,k,n);
-        transport(mata,tran_a,k,m);
-        transport(matb,tran_b,n,k);
-        vex_wo(tran_a,tran_b,matc,ar,ac,br,bc,m,k,n);
-        free(tran_a,m);
-        free(tran_b,n);
-    }
-    else{
-        add(matc,temp,m,n,alpha,beta);
-        free(temp,m);
-        printf("argument error");
-    }
-
-    add(matc,temp,m,n,alpha,beta);
+    vex_wo(mata,matb,temp,ar,ac,br,bc,m,k,n);
+    add(matc,temp,ar,bc,m,n,beta,alpha);
     free(temp,m);
+}
+
+void test_gemm(){
+    printf("test for gemm:\n");
+    int m = 2048;
+    int n = 2048;
+    int k = 2048;
+    float alpha = 1;
+    float beta = 1;
+    float ** mata = new_matrix(m,k);
+    float ** matb = new_matrix(k,n);
+    float ** matc = new_matrix(m,n);
+    for(int i = 0 ; i < m ; ++i){
+        for(int j = 0; j < m ; ++j){
+            mata[i][j] = 1;
+        }
+    }
+    for(int i = 0; i < m ; ++i){
+        for (int j = 0; j < n; ++j){
+            matb[i][j] = 2;
+        }
+    }
+    init(matc,m,n);
+    gemm(mata,matb,matc,alpha,beta,0,0,0,0,m,k,n);
+    display(matc,m,n);
+    free(mata,m);
+    free(matb,k);
+    free(matc,m);
 }
 
 #endif

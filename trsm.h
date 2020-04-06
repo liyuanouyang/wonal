@@ -28,7 +28,8 @@ void direct_trsm(float **mata, float **matb, float **matx,
         for (int i = 0; i < m; ++i) {
             int temp = 0;
             for (int k = 0; k < i; ++k) {
-                temp += mata[ar+i][ac+k]*matx[xr+k][xc+j];
+                if(ar + i >= ac + k)
+                    temp += mata[ar+i][ac+k]*matx[xr+k][xc+j];
             }
             matx[xr+i][xc+j] = (matb[ar+i][xc+j] - temp)/mata[ar+i][ac+i];
             temp = 0;
@@ -41,7 +42,7 @@ void direct_trsm(float **mata, float **matb, float **matx,
 //A is m*m , B is m*n X is m*n ,wo find x
 void woco_trsm(float **mata, float **matb, float **matx, float** temp,
         int ar, int ac,int xr, int xc, int m, int n){
-    if (3*m*n < CACHE_SIZE){
+    if (3*m*n < CACHE_SIZE || m % 2 == 1 || n % 2 == 1){
         direct_trsm(mata,matb,matx,ar,ac,xr,xc,m,n);
     } else{
         //partitiion to 4
@@ -64,8 +65,39 @@ void woco_trsm(float **mata, float **matb, float **matx, float** temp,
         woco_trsm(mata,matb,matx,temp,ar+r,ac+r,xr+r,xc+c,r,c);
     }
 }
+ //A is m*m , B is m*n X is m*n 
+void trsm(float ** mata, float **matb, float **matx,int ar,int ac,int br,int bc,int m,int n){
+    float ** temp = new_matrix(ar + m, bc + n);
+    init(temp,ar + m, bc + n);
+    woco_trsm(mata,matb,matx,temp,ar,ac,br,bc,m,n);
+}
 
+void test_trsm(){
+    int m = 2048;
+    int n = 2048;
+    float ** mata = new_matrix(m,m);
+    float ** matb = new_matrix(m,n);
+    float ** matx = new_matrix(m,n);
+    for(int i = 0 ; i < m ; ++i){
+        for(int j = 0; j < m ; ++j){
+            if(i >= j) mata[i][j] = 1;
+            else mata[i][j] = 0;
+        }
+    }
+    for(int i = 0; i < m ; ++i){
+        for (int j = 0; j < n; ++j){
+            matb[i][j] = (i + 1)*(j + 1);
+        }
+    }
+    init(matx,m,n);
+    trsm(mata,matb,matx,0,0,0,0,m,n);
+    display(matx,m,n);
+    free(mata,m);
+    free(matb,m);
+    free(matx,m);
+}
 
+/*
 void direct_trsm_u(float **mata, float **matb, float **matx,
         int ar, int ac, int xr, int xc,
         int m, int n){
@@ -88,7 +120,7 @@ void direct_trsm_u(float **mata, float **matb, float **matx,
 //need test
 void woco_trsm_u(float **mata, float **matb, float **matx, float** temp,
         int ar, int ac,int xr, int xc, int m, int n){
-    if (3*m*n < CACHE_SIZE){
+    if (3*m*n < CACHE_SIZE||m % 2 == 1 || n % 2 == 1){
         direct_trsm_u(mata, matb, matx, ar, ac, xr, xc, m, n);
     } else{
         //partitiion to 4
@@ -111,113 +143,7 @@ void woco_trsm_u(float **mata, float **matb, float **matx, float** temp,
     }
 }
 
-/*
-DTRSM  solves one of the matrix equations
-
-    op( A )*X = alpha*B,   or   X*op( A ) = alpha*B,
-
- where alpha is a scalar, X and B are m by n matrices, A is a unit, or
- non-unit,  upper or lower triangular matrix  and  op( A )  is one  of
-
-    op( A ) = A   or   op( A ) = A**T.
-
- The matrix X is overwritten on B.
 */
-void trsm(char SIDE, char UPLO, char TRANSA,
-        float **mata, float **matb, float alpha,
-        int ar, int ac, int xr, int xc, int m, int n ){
-	float **matx = new_matrix(m, n);
-    init(matx,m,n);
-    int error = 0;
-	mul(matb,m,n,alpha);
-    if(SIDE == 'L' || SIDE == 'l'){
-
-        float **temp = new_matrix(m, n);
-        init(temp,m,n);
-        float **tran_a = new_matrix(m, m);
-        init(tran_a,m,m);
-
-        if(UPLO == 'L' ||UPLO == 'l'){
-            if(TRANSA == 'N' || TRANSA == 'n'){
-                woco_trsm(mata, matb, matx, temp, ar, ac, xr, xc, m, n);
-            }
-            else if(TRANSA == 'T' || TRANSA == 't' || TRANSA == 'C' || TRANSA == 'c'){
-                transport(mata, tran_a, m, m);
-                woco_trsm_u(tran_a, matb, matx, temp, ar, ac, xr, xc, m, n);
-            }
-            else error = 1;
-        }
-        else if(UPLO == 'U' ||UPLO == 'u'){
-            if(TRANSA == 'N' || TRANSA == 'n'){
-                woco_trsm_u(mata, matb, matx, temp, ar, ac, xr, xc, m, n);
-            }
-            else if(TRANSA == 'T' || TRANSA == 't' || TRANSA == 'C' || TRANSA == 'c'){
-                transport(mata, tran_a, m, m);
-                woco_trsm(tran_a, matb, matx, temp, ar, ac, xr, xc, m, n);
-            }
-            else error = 1;
-        }
-        else error = 2;
-
-        free(tran_a,m);
-        free(temp,m);
-    }
-    else if(SIDE == 'R' || SIDE == 'r'){
-
-        float **temp = new_matrix(n, m);
-        init(temp,n,m);
-        float **tran_a = new_matrix(n, n);
-        init(tran_a,n,n);
-        float **tran_x = new_matrix(n, m);
-        init(tran_x,n,m);
-        float **tran_b = new_matrix(n, m);
-        init(tran_b,n,m);
-
-        if(UPLO == 'L' ||UPLO == 'l'){
-            if(TRANSA == 'N' || TRANSA == 'n'){
-                transport(mata, tran_a, n, n);
-                transport(matb, tran_b, m ,n);
-                woco_trsm_u(tran_a, tran_b, tran_x, temp, ar, ac, xr, xc, n, m);
-                transport(tran_x, matx, n, m);
-            }
-            else if(TRANSA == 'T' || TRANSA == 't' || TRANSA == 'C' || TRANSA == 'c'){
-                transport(matb, tran_b, m ,n);
-                woco_trsm(mata, tran_b, tran_x, temp, ar, ac, xr, xc, n, m);
-                transport(tran_x, matx, n, m);
-            }
-            else error = 1;
-        }
-        else if(UPLO == 'U' ||UPLO == 'u'){
-            if(TRANSA == 'N' || TRANSA == 'n'){
-                transport(mata, tran_a, n, n);
-                transport(matb, tran_b, m ,n);
-                woco_trsm(tran_a, tran_b, tran_x, temp, ar, ac, xr, xc, n, m);
-                transport(tran_x, matx, n, m);
-            }
-            else if(TRANSA == 'T' || TRANSA == 't' || TRANSA == 'C' || TRANSA == 'c'){
-                transport(matb, tran_b, m ,n);
-                woco_trsm_u(mata, tran_b, tran_x, temp, ar, ac, xr, xc, n, m);
-                transport(tran_x, matx, n, m);
-            }
-            else error = 1;
-        }
-        else error = 2;
-
-        free(tran_b,n);
-        free(tran_x,n);
-        free(tran_a,n);
-        free(temp,n);
-    }
-    else error = 3;
-
-    if(error == 1) printf("argument TRANSA error!");
-    if(error == 2) printf("argument UPLO error!");
-    if(error == 3) printf("argument SIDE error!");
-	copy(matb,matx,m,n);
-	free(matx,m);
-
-}
-
 
 #endif //WONAL_TRSM_H
 
