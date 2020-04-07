@@ -380,13 +380,14 @@ void add(float **mata, float **matb, int ar ,int ac,int m, int n, float alpha, f
 
 void display(float ** mata, int m,int n){
     ofstream outfile;
-    outfile.open("afile.dat");
+    outfile.open("afile.dat",ios::app);
     for(int i = 0; i < m; i++){
         for(int j = 0; j < n; j++){
-            outfile << mata[i][j] << ' ';
+            outfile << setw(5)<<setiosflags(ios::right)<<mata[i][j] << ' ';
         }
         outfile << endl;
     }
     outfile << endl;
+    outfile.close();
 }	
 #endif //WONAL_BASEWO_H
