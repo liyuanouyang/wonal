@@ -26,7 +26,7 @@ void direct_trsm(float **mata, float **matb, float **matx,
 #pragma omp parallel for num_threads(core_num) default(none) shared(mata,matb,matx,m,n,ar,ac,xr,xc)
     for (int j = 0; j < n; ++j) {
         for (int i = 0; i < m; ++i) {
-            int temp = 0;
+            float temp = 0;
             for (int k = 0; k < i; ++k) {
                 if(ar + i >= ac + k)
                     temp += mata[ar+i][ac+k]*matx[xr+k][xc+j];
@@ -65,7 +65,7 @@ void woco_trsm(float **mata, float **matb, float **matx, float** temp,
         woco_trsm(mata,matb,matx,temp,ar+r,ac+r,xr+r,xc+c,r,c);
     }
 }
- //A is m*m , B is m*n X is m*n 
+//A is m*m , B is m*n X is m*n
 void trsm(float ** mata, float **matb, float **matx,int ar,int ac,int br,int bc,int m,int n){
     float ** temp = new_matrix(ar + m, bc + n);
     init(temp,ar + m, bc + n);
@@ -97,7 +97,7 @@ void test_trsm(){
     free(matx,m);
 }
 
-/*
+
 void direct_trsm_u(float **mata, float **matb, float **matx,
         int ar, int ac, int xr, int xc,
         int m, int n){
@@ -105,10 +105,10 @@ void direct_trsm_u(float **mata, float **matb, float **matx,
     //A is m*m , B is m*n X is m*n ,wo find x
     //square n
 #pragma omp parallel for num_threads(core_num) default(none) shared(mata,matb,matx,m,n,ar,ac,xr,xc)
-    for (int j = 0; j < n; ++j) {
+    for (int j = n-1; j >= 0; --j) {
         for (int i = m - 1; i >= 0; --i) {
-            int temp = 0;
-            for (int k = i; k < m ; ++k) {
+            float temp = 0;
+            for (int k = i + 1; k < m ; ++k) {
                 temp += mata[ar+i][ac+k]*matx[xr+k][xc+j];
             }
             matx[xr+i][xc+j] = (matb[ar+i][xc+j] - temp)/mata[ar+i][ac+i];
@@ -116,6 +116,7 @@ void direct_trsm_u(float **mata, float **matb, float **matx,
         }
     }
 }
+
 
 //need test
 void woco_trsm_u(float **mata, float **matb, float **matx, float** temp,
@@ -143,8 +144,10 @@ void woco_trsm_u(float **mata, float **matb, float **matx, float** temp,
     }
 }
 
-*/
+void trsm_u(float ** mata, float **matb, float **matx,int ar,int ac,int br,int bc,int m,int n){
+    float ** temp = new_matrix(ar + m, bc + n);
+    init(temp,ar + m, bc + n);
+    woco_trsm_u(mata,matb,matx,temp,ar,ac,br,bc,m,n);
+}
 
 #endif //WONAL_TRSM_H
-
-

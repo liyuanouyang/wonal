@@ -1,8 +1,8 @@
 /*
  * @Author       : whe
  * @Date         : 2020-04-03 22:26:06
- * @LastEditTime : 2020-04-06 19:05:46
- * @Description  : 
+ * @LastEditTime : 2020-04-14 10:15:25
+ * @Description  :
  */
 
 #ifndef WONAL_TFSM_H
@@ -12,17 +12,17 @@
 #include "gemm.h"
 
 /*
- Level 3 BLAS like routine for A in RFP Format.
- DTFSM  solves the matrix equation A *X = B  
- A is in Rectangular Full Packed (RFP) Format.
-*/
-//just for m is odd
+   Level 3 BLAS like routine for A in RFP Format.
+   DTFSM  solves the matrix equation A *X = B
+   A is in Rectangular Full Packed (RFP) Format.
+   */
+//just for m is odd, A is lower matrix.
 void tfsm(float ** mata, float ** matb,float** matx,int ar, int ac, int br, int bc, int m, int n){
     int m1,m2;
-    
+
     m2 = m / 2;
     m1 = m -m2;
-    
+
     if(m1 == 1){
         trsm(mata,matb,matx,ar,ac,br,bc,m1,n);
     }
@@ -33,12 +33,12 @@ void tfsm(float ** mata, float ** matb,float** matx,int ar, int ac, int br, int 
         transport(mata,tran,ar,ac+1,m2,m2);
         trsm(tran,matb,matx,0,0,br+m1,bc,m2,n);
         free(tran,m2);
-    }        
+    }
 }
 
 void test_tfsm(){
     int m = 2049;
-    int k = m / 2 + 1;   
+    int k = m / 2 + 1;
     int n = 2048;
     float ** mata = new_matrix(m,k);
     float ** matb = new_matrix(m,n);

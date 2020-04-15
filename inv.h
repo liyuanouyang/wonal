@@ -1,7 +1,7 @@
 /*
  * @Author       : whe
  * @Date         : 2020-03-07 16:24:20
- * @LastEditTime : 2020-04-07 10:41:00
+ * @LastEditTime : 2020-04-14 22:51:22
  * @Description  :
  */
 
@@ -68,6 +68,9 @@ void test_invl(){
     init(temp,m,m);
     woco_invl(mata,matb,temp,0,0,m);
     display(matb,m,m);
+    free(mata,m);
+    free(matb,m);
+    free(temp,m);
 }
 
 // A is upper triangular matrix
@@ -131,12 +134,35 @@ void inv(
     woco_invu(matu, inv_matu, temp, ar, ac, m);
     init(temp, m);
     vex_wo(inv_matu, inv_matl, temp, ar, ac, ar, ac, m, m, m);
-    vex_wo(temp, matp, inv_mata, ar , ac, ar, ac, m, m, m);
+    vex_wo(matp, temp, inv_mata, ar , ac, ar, ac, m, m, m);
     free(matl,m);
     free(matu,m);
     free(matp,m);
     free(inv_matu,m);
     free(inv_matl,m);
+}
+
+void test_inv(){
+    int m = 3;
+    float ** mata = new_matrix(m,m);
+    float ** matb = new_matrix(m,m);
+    float ** temp = new_matrix(m,m);
+    for(int i = 0 ; i < m ; ++i){
+        for(int j = 0; j < m ; ++j){
+            if(i >= j) mata[i][j] = 1;
+            else mata[i][j] = 1;
+        }
+    }
+    mata[1][1] = 2;
+    mata[1][2] = 3;
+    mata[2][1] = 5;
+    init(matb,m,m);
+    init(temp,m,m);
+    inv(mata,matb,temp,0,0,m);
+    display(matb,m,m);
+    free(mata,m);
+    free(matb,m);
+    free(temp,m);
 }
 
 #endif //WONAL_INV_H

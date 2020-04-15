@@ -44,7 +44,7 @@ void matrix_pivot(float** mata, float** matp,int ar,int ac, int n){
         }
         if (max_j != i){
             for (int k = 0; k < n; ++k) {
-//                _swap(matp[i][k], &matp[max_j][k]);
+                //                _swap(matp[i][k], &matp[max_j][k]);
                 int ari = ar+i,ack = ac+k,armaxj = ar+max_j;
                 float temp = matp[ari][ack];
                 matp[ari][ack] = matp[armaxj][ack];
@@ -80,15 +80,16 @@ void lufac(float** mata, float** matl, float** matu,float** matp,int ar, int ac,
     init(matl,ar,ac,n);init(matu,ar,ac,n);
     matrix_pivot(mata,matp,ar,ac,n);
     float ** matAprime = NULL;
-    if (flag == 1){
-        matAprime = new float*[inputm];
-        for (int i = 0; i < inputm; ++i) {
-            matAprime[i] = new float[inputn];
-        }
-        vex_wo(mata,matp,matAprime,ar,ac,ar,ac,n,n,n);
-    }
-    else if (flag == 2){matAprime=omp_vec_mat_mult_return(mata,matp,ar,ac,ar,ac,n,n,n,inputm,inputn);}
 
+    matAprime = new float*[inputm];
+    for (int i = 0; i < inputm; ++i) {
+        matAprime[i] = new float[inputn];
+    }
+    vex_wo(mata,matp,matAprime,ar,ac,ar,ac,n,n,n);
+    /*if (flag == 1){
+      }
+      else if (flag == 2){matAprime=omp_vec_mat_mult_return(mata,matp,ar,ac,ar,ac,n,n,n,inputm,inputn);}
+      */
     for (int i = 0; i < n; ++i) {
         matl[ar+i][ac+i] = 1;
     }
@@ -144,20 +145,27 @@ void woco_LUfac(float** mata,float** matl,float** matu,float**matp,float** trsm_
     if (n*n<CACHE_SIZE|| p!=q){
         lufac(mata,matl,matu,matp,ar,ac,n,inputm,inputn);
     }
-    woco_LUfac(mata,matl,matu,matp,trsm_temp,ar,ac,p,inputm,inputn);
-    woco_trsm(matl,mata,matu,trsm_temp,ar,ac,ar,ac+p,q,q);
-    woco_trsm(matu,mata,matl,trsm_temp,ar,ac,ar+p,ac,q,q);
-    if (flag ==1){
+    else{
+        woco_LUfac(mata,matl,matu,matp,trsm_temp,ar,ac,p,inputm,inputn);
+        woco_trsm(matl,mata,matu,trsm_temp,ar,ac,ar,ac+p,q,q);
+        woco_trsm_u(matu,mata,matl,trsm_temp,ar,ac,ar+p,ac,q,q);
         float **temp = new float*[inputm];
         for (int i = 0; i < inputm; ++i) {
             temp[i] = new float[inputn];
         }
         vex_wo(matl,matu,temp,ar+p,ac,ar,ac+p,p,p,p);
-        matrix_minus(mata,temp,ar,ac,0,0,p);
-    } else if(flag == 2){
-        matrix_minus(mata,omp_vec_mat_mult_return(matl,matu,ar+p,ac,ar,ac+p,p,p,p,inputm,inputn),ar,ac,0,0,p);
+        /*if (flag ==1){
+          float **temp = new float*[inputm];
+          for (int i = 0; i < inputm; ++i) {
+          temp[i] = new float[inputn];
+          }
+          vex_wo(matl,matu,temp,ar+p,ac,ar,ac+p,p,p,p);
+          matrix_minus(mata,temp,ar,ac,0,0,p,p);
+          } else if(flag == 2){
+          matrix_minus(mata,omp_vec_mat_mult_return(matl,matu,ar+p,ac,ar,ac+p,p,p,p,inputm,inputn),ar,ac,0,0,p);
+          }*/
+        woco_LUfac(mata,matl,matu,matp,trsm_temp,ar+p,ac+p,q,inputm,inputn);
     }
-    woco_LUfac(mata,matl,matu,matp,trsm_temp,ar+p,ac+p,q,inputm,inputn);
 }
 
 #endif //WONAL_LUFAC_H
