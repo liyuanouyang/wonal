@@ -105,7 +105,7 @@ void direct_trsm_u(float **mata, float **matb, float **matx,
     //A is m*m , B is m*n X is m*n ,wo find x
     //square n
 #pragma omp parallel for num_threads(core_num) default(none) shared(mata,matb,matx,m,n,ar,ac,xr,xc)
-    for (int j = n-1; j >= 0; --j) {
+    for (int j = 0; j < n; j++) {
         for (int i = m - 1; i >= 0; --i) {
             float temp = 0;
             for (int k = i + 1; k < m ; ++k) {
@@ -117,7 +117,32 @@ void direct_trsm_u(float **mata, float **matb, float **matx,
     }
 }
 
-
+void test_trsm_u(){
+    int m = 4;
+    int n = 1;
+    float ** mata = new_matrix(m,m);
+    float ** matb = new_matrix(m,n);
+    float ** matx = new_matrix(m,n);
+    for(int i = 0 ; i < m ; ++i){
+        for(int j = 0; j < m ; ++j){
+            if(i > j) mata[i][j] = 0;
+            else mata[i][j] = 1;
+        }
+    }
+    for(int i = 0; i < m ; ++i){
+        for (int j = 0; j < n; ++j){
+            matb[m-i-1][n-j-1] = (i + 1)*(j + 1);
+        }
+    }
+    init(matx,m,n);
+    display(mata,m,m);
+    display(matb,m,n);
+    direct_trsm_u(mata,matb,matx,0,0,0,0,m,n);
+    display(matx,m,n);
+    free(mata,m);
+    free(matb,m);
+    free(matx,m);
+}
 //need test
 void woco_trsm_u(float **mata, float **matb, float **matx, float** temp,
         int ar, int ac,int xr, int xc, int m, int n){
