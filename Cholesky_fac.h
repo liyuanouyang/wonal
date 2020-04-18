@@ -61,12 +61,13 @@ void woco_chol(float** mata, float** matl, float** matlt, float** tempc, float**
         init(temp,ar,ac,m);
         woco_trsm(matl,mata,matlt,temp,ar,ac,ar,ac+m,p,p);
         transport(matl,templ,p,m);
-//        float** tempc;
-//        square_matrix(&tempc,2*p);
+        //        float** tempc;
+        //        square_matrix(&tempc,2*p);
         init(tempc,ar,ac,n);
-        if (flag == 1){vex_wo(matl,templ,tempc,ar+m,ac,ar,ac+m,p,m,p);}
-        else if (flag == 2){omp_vec_mat_mult(matl,templ,tempc,ar+m,ac,ar,ac+m,p,m,p);}
-        matrix_minus(mata,tempc,ar+m,ac+m,0,0,p);
+        vex_wo(matl,templ,tempc,ar+m,ac,ar,ac+m,p,m,p);
+        //        if (flag == 1){vex_wo(matl,templ,tempc,ar+m,ac,ar,ac+m,p,m,p);}
+        //        else if (flag == 2){omp_vec_mat_mult(matl,templ,tempc,ar+m,ac,ar,ac+m,p,m,p);}
+        matrix_minus(mata,tempc,ar+m,ac+m,0,0,p,p);
         woco_chol(mata,matl,matlt,tempc,temp,templ,ar+m,ac+m,p);
     }
 }

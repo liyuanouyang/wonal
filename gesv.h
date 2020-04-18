@@ -1,7 +1,7 @@
 /*
  * @Author       : whe
  * @Date         : 2020-04-14 10:30:52
- * @LastEditTime : 2020-04-15 11:17:57
+ * @LastEditTime : 2020-04-18 11:39:12
  * @Description  :
  */
 #ifndef WONAL_GESV_H
@@ -38,28 +38,32 @@ void gesv(float ** mata, float ** matb, float ** matx, int ar, int ac, int br, i
     trsm_u(matu,matx,temp,ar,ac,br,bc,m,n);
     init(matx,m,n);
     vex_wo(matp,temp,matx,ar,ac,br,bc,m,m,n);
+    free(matp,m);
+    free(matl,m);
+    free(matu,m);
+    free(temp,m);
 }
 
 void test_gesv(){
-    int m = 3;
-    int n = 1;
+    int m = 2048;
+    int n = 2048;
     float ** mata = new_matrix(m,m);
     float ** matb = new_matrix(m,n);
     float ** matx = new_matrix(m,n);
     init(matb,m,n);
     init(matx,m,n);
     for(int i = 0; i < m; i++){
+        mata[i][i] = i + 1;
         for(int j = 0; j < m; j++){
-            mata[i][j] = 1; 
+            if(i > j) mata[i][j] = mata[j][j];
+            if(i < j) mata[i][j] = mata[i][i];
         }
     }
-    mata[1][1] = 2;
-    mata[1][2] = 3;
-    mata[2][1] = 5;
-    matb[0][0] = 3;
-    matb[1][0] = 6;
-    matb[2][0] = 7;
-    display(mata,m,m);
+    for(int i = 0; i < m ; ++i){
+        for (int j = 0; j < n; ++j){
+            matb[i][j] = (i + 1)*(j + 1);
+        }
+    }
     gesv(mata,matb,matx,0,0,0,0,m,n);
     display(matx,m,n);
 }
