@@ -31,13 +31,13 @@ void trmm(float **mata,float** matb,float ** matx,float ** temp,int ar,int ac,in
     else{
         int r = m / 2;
         int c = n / 2;
-        vex_wo(mata,matb,matx,ar,ac,br,bc,r,r,c);
-        vex_wo(mata,matb,matx,ar,ac,br,bc+c,r,r,c);
+        direct_trmm(mata,matb,matx,ar,ac,br,bc,r,c);
+        direct_trmm(mata,matb,matx,ar,ac,br,bc+c,r,c);
         vex_wo(mata,matb,matx,ar+r,ac,br,bc,r,r,c);
-        vex_wo(mata,matb,temp,ar+r,ac+r,br+r,bc,r,r,c);
+        direct_trmm(mata,matb,temp,ar+r,ac+r,br+r,bc,r,c);
         add(matx,temp,ar+r,bc,r,c,1,1);
         vex_wo(mata,matb,matx,ar+r,ac,br,bc+c,r,r,c);
-        vex_wo(mata,matb,temp,ar+r,ac+r,br+r,bc+c,r,r,c);
+        direct_trmm(mata,matb,temp,ar+r,ac+r,br+r,bc+c,r,c);
         add(matx,temp,ar+r,bc+c,r,c,1,1);
     }
 }
